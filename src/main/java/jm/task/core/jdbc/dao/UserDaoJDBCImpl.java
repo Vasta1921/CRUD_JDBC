@@ -9,7 +9,16 @@ import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
 
-
+    Connection conn;
+    {
+        try {
+            conn = Util.getConnection();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     public UserDaoJDBCImpl() {
 
@@ -23,13 +32,9 @@ public class UserDaoJDBCImpl implements UserDao {
                 "  `lastname` VARCHAR(45) NULL,\n" +
                 "  `age` INT NULL,\n" +
                 "  PRIMARY KEY (`id`));";
-        try {
-            PreparedStatement prst = Util.getConnection().prepareStatement(createUsersTable);
-            prst.executeUpdate();
-        } catch ( SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        catch (ClassNotFoundException e) {
+        try(Statement statement = conn.createStatement()) {
+            statement.executeUpdate(createUsersTable);
+        } catch ( SQLException e) {
             e.printStackTrace();
         }
     }
@@ -37,26 +42,24 @@ public class UserDaoJDBCImpl implements UserDao {
     public void dropUsersTable() {
         String dropUsersTable = "DROP TABLE USER;";
 
-        try {
-            PreparedStatement prst = Util.getConnection().prepareStatement(dropUsersTable);
-            prst.executeUpdate();
-        } catch (SQLException | ClassNotFoundException throwables) {
-            throwables.printStackTrace();
+        try(Statement statement = conn.createStatement()) {
+            statement.executeUpdate(dropUsersTable);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
         String insert = "INSERT INTO USER (NAME, LASTNAME, AGE) VALUES (?,?,?)";
 
-        try {
-            PreparedStatement prst = Util.getConnection().prepareStatement(insert);
+        try(PreparedStatement prst = conn.prepareStatement(insert)) {
             prst.setString(1, name);
             prst.setString(2, lastName);
             prst.setByte(3, age);
             prst.executeUpdate();
         }
-         catch (SQLException | ClassNotFoundException throwables) {
-            throwables.printStackTrace();
+         catch (SQLException e) {
+            e.printStackTrace();
         }
 
 
@@ -65,12 +68,11 @@ public class UserDaoJDBCImpl implements UserDao {
     public void removeUserById(long id) {
         String removeUserById = "DELETE FROM USER WHERE ID = ?";
 
-        try {
-            PreparedStatement prst = Util.getConnection().prepareStatement(removeUserById);
+        try (PreparedStatement prst = conn.prepareStatement(removeUserById)){
             prst.setLong(1, id);
             prst.executeUpdate();
-        } catch (SQLException | ClassNotFoundException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -95,11 +97,10 @@ public class UserDaoJDBCImpl implements UserDao {
     public void cleanUsersTable() {
         String clearUsersTable = "TRUNCATE TABLE USER";
 
-        try {
-            PreparedStatement prst = Util.getConnection().prepareStatement(clearUsersTable);
-            prst.executeUpdate();
-        } catch (SQLException | ClassNotFoundException throwables) {
-            throwables.printStackTrace();
+        try (Statement statement = conn.createStatement()){
+            statement.executeUpdate(clearUsersTable);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
 
